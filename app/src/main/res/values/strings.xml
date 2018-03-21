@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Last.FM</string>
+    <string name="text_album_search">Search an Album</string>
+    <string name="text_message">There\'s no album present at this moment.</string>
 </resources>
