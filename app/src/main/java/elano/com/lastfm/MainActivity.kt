@@ -17,7 +17,6 @@ import elano.com.lastfm.models.Album
 import elano.com.lastfm.models.AlbumDetails
 import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.*
-import org.json.JSONObject
 import java.io.IOException
 
 class MainActivity : AppCompatActivity(), TextView.OnEditorActionListener, Callback {
@@ -65,13 +64,16 @@ class MainActivity : AppCompatActivity(), TextView.OnEditorActionListener, Callb
             tvMessage.visibility = View.GONE
             progressBar.visibility = View.VISIBLE
             for (a in album.results.albumMatches.albums)
-                mAdapter?.add(a)
+                mAlbums?.add(a)
+            recyclerView.adapter = mAdapter
             progressBar.visibility = View.GONE
         }
     }
 
     override fun onFailure(call: Call?, e: IOException?) {
-        toast("Failed to fetch results.")
+        runOnUiThread {
+            toast("Failed to fetch results.")
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

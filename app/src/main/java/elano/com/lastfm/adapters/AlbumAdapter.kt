@@ -13,11 +13,6 @@ import elano.com.lastfm.models.AlbumDetails
 
 class AlbumAdapter(private val context: Context, private val albums: ArrayList<AlbumDetails>?) : RecyclerView.Adapter<AlbumAdapter.AlbumViewHolder>() {
 
-    fun add(album: AlbumDetails) {
-        albums?.add(album)
-        notifyDataSetChanged()
-    }
-
     fun clear() {
         val size = albums!!.size
 
