@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity(), Callback {
 
     private var mAlbums: ArrayList<Album>? = null
     private var mAdapter: AlbumAdapter? = null
+    private var count = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,10 +44,17 @@ class MainActivity : AppCompatActivity(), Callback {
     override fun onResponse(call: Call?, response: Response?) {
         val body = response?.body()?.string()
         val jsonObject = JSONObject(body)
+        val totalResults = jsonObject.getString("opensearch:totalResults").toInt()
         val album = GsonBuilder().create().fromJson(body, Album::class.java)
 
         mAlbums = ArrayList()
         mAdapter = AlbumAdapter(this, mAlbums)
+
+        if (jsonObject.isNull(KEY_NAME))
+            toast("Album not found.")
+        else {
+            for (i in 0..totalResults)
+        }
     }
 
     override fun onFailure(call: Call?, e: IOException?) {
@@ -55,5 +63,10 @@ class MainActivity : AppCompatActivity(), Callback {
 
     private fun toast(text: String) {
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+    }
+
+    companion object {
+        const val ALBUM_LIMIT = 50
+        const val KEY_NAME = "name"
     }
 }
