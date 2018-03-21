@@ -9,9 +9,21 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.squareup.picasso.Picasso
 import elano.com.lastfm.R
-import elano.com.lastfm.models.Album
+import elano.com.lastfm.models.AlbumDetails
 
-class AlbumAdapter(private val context: Context, private val albums: ArrayList<Album>?) : RecyclerView.Adapter<AlbumAdapter.AlbumViewHolder>() {
+class AlbumAdapter(private val context: Context, private val albums: ArrayList<AlbumDetails>?) : RecyclerView.Adapter<AlbumAdapter.AlbumViewHolder>() {
+
+    fun add(album: AlbumDetails) {
+        albums?.add(album)
+        notifyDataSetChanged()
+    }
+
+    fun clear() {
+        val size = albums!!.size
+
+        albums.clear()
+        notifyItemRangeRemoved(0, size)
+    }
 
     override fun getItemCount(): Int = albums!!.size
 
@@ -21,9 +33,9 @@ class AlbumAdapter(private val context: Context, private val albums: ArrayList<A
     override fun onBindViewHolder(holder: AlbumViewHolder?, position: Int) {
         val album = albums!![position]
 
-        Picasso.with(context).load(album.albumImage).into(holder?.imageAlbum)
-        holder?.songName?.text = album.songName
-        holder?.singer?.text = album.singer
+        Picasso.with(context).load(album.images[2].image).into(holder?.imageAlbum)
+        holder?.songName?.text = album.name
+        holder?.singer?.text = album.artist
     }
 
     inner class AlbumViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView) {

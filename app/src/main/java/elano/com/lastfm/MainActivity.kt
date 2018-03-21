@@ -4,27 +4,40 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.text.TextUtils
+import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.widget.TextView
 import android.widget.Toast
 import com.google.gson.GsonBuilder
 import elano.com.lastfm.adapters.AlbumAdapter
 import elano.com.lastfm.models.Album
+import elano.com.lastfm.models.AlbumDetails
 import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
 
-class MainActivity : AppCompatActivity(), Callback {
+class MainActivity : AppCompatActivity(), TextView.OnEditorActionListener, Callback {
 
-    private var mAlbums: ArrayList<Album>? = null
+    private var mAlbums: ArrayList<AlbumDetails>? = null
     private var mAdapter: AlbumAdapter? = null
-    private var count = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        textInputLayout.setOnClickListener { fetchAlbumJson() }
+        etSearch.setOnEditorActionListener(this)
+    }
+
+    override fun onEditorAction(v: TextView?, actionId: Int, event: KeyEvent?): Boolean {
+        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+            fetchAlbumJson()
+            return true
+        }
+        return false
     }
 
     private fun fetchAlbumJson() {
@@ -43,17 +56,17 @@ class MainActivity : AppCompatActivity(), Callback {
 
     override fun onResponse(call: Call?, response: Response?) {
         val body = response?.body()?.string()
-        val jsonObject = JSONObject(body)
-        val totalResults = jsonObject.getString("opensearch:totalResults").toInt()
         val album = GsonBuilder().create().fromJson(body, Album::class.java)
 
         mAlbums = ArrayList()
         mAdapter = AlbumAdapter(this, mAlbums)
 
-        if (jsonObject.isNull(KEY_NAME))
-            toast("Album not found.")
-        else {
-            for (i in 0..totalResults)
+        runOnUiThread {
+            tvMessage.visibility = View.GONE
+            progressBar.visibility = View.VISIBLE
+            for (a in album.results.albumMatches.albums)
+                mAdapter?.add(a)
+            progressBar.visibility = View.GONE
         }
     }
 
@@ -61,12 +74,20 @@ class MainActivity : AppCompatActivity(), Callback {
         toast("Failed to fetch results.")
     }
 
-    private fun toast(text: String) {
-        Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu, menu)
+        return super.onCreateOptionsMenu(menu)
     }
 
-    companion object {
-        const val ALBUM_LIMIT = 50
-        const val KEY_NAME = "name"
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            R.id.clear -> mAdapter?.clear()
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun toast(text: String) {
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
     }
 }
