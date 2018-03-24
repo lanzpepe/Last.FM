@@ -24,6 +24,7 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "org.apache.commons:commons-lang3:$commons_version"
     implementation "com.google.code.gson:gson:$gson_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"

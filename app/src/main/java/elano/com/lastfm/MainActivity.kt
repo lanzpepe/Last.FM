@@ -13,15 +13,16 @@ import android.widget.TextView
 import android.widget.Toast
 import com.google.gson.GsonBuilder
 import elano.com.lastfm.adapters.AlbumAdapter
+import elano.com.lastfm.models.AlbumModel
 import elano.com.lastfm.models.Album
-import elano.com.lastfm.models.AlbumDetails
 import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.*
+import org.apache.commons.lang3.StringUtils
 import java.io.IOException
 
 class MainActivity : AppCompatActivity(), TextView.OnEditorActionListener, Callback {
 
-    private var mAlbums: ArrayList<AlbumDetails>? = null
+    private var mAlbums: ArrayList<Album>? = null
     private var mAdapter: AlbumAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +41,7 @@ class MainActivity : AppCompatActivity(), TextView.OnEditorActionListener, Callb
     }
 
     private fun fetchAlbumJson() {
-        val search = etSearch.text.toString()
+        val search = StringUtils.capitalize(etSearch.text.toString())
 
         if (TextUtils.isEmpty(search))
             etSearch.error = "Please input search name."
@@ -55,19 +56,23 @@ class MainActivity : AppCompatActivity(), TextView.OnEditorActionListener, Callb
 
     override fun onResponse(call: Call?, response: Response?) {
         val body = response?.body()?.string()
-        val album = GsonBuilder().create().fromJson(body, Album::class.java)
+        val album = GsonBuilder().create().fromJson(body, AlbumModel::class.java)
 
         mAlbums = ArrayList()
         mAdapter = AlbumAdapter(this, mAlbums)
 
-        runOnUiThread {
-            tvMessage.visibility = View.GONE
-            progressBar.visibility = View.VISIBLE
-            for (a in album.results.albumMatches.albums)
-                mAlbums?.add(a)
-            recyclerView.adapter = mAdapter
-            progressBar.visibility = View.GONE
+        for (i in 0 until SEARCH_LIMIT) {
+            runOnUiThread {
+                println(body)
+                tvMessage.visibility = View.GONE
+                progressBar.visibility = View.VISIBLE
+                recyclerView.adapter = mAdapter
+                mAdapter?.add(album.results.albumMatches.album[i])
+
+            }
+            Thread.sleep(1000)
         }
+        runOnUiThread { progressBar.visibility = View.GONE }
     }
 
     override fun onFailure(call: Call?, e: IOException?) {
@@ -91,5 +96,9 @@ class MainActivity : AppCompatActivity(), TextView.OnEditorActionListener, Callb
 
     private fun toast(text: String) {
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+    }
+
+    companion object {
+        const val SEARCH_LIMIT = 50
     }
 }
